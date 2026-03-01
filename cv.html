@@ -19,6 +19,7 @@
         .gradient-text {
             background: linear-gradient(to right, #3b82f6, #8b5cf6);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -63,23 +64,38 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
-            <!-- Project 0: First Wannakorn Markdown Parser -->
+            <!-- Project 0: First Wannakorn Markdown Parser (v1) -->
             <a href="./first-wannakorn.html"
                 class="block bg-white rounded-2xl p-6 project-card border border-gray-100 shadow-sm relative overflow-hidden group">
-                <div
-                    class="absolute top-0 right-0 bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg z-10">
-                    NEW</div>
                 <div
                     class="w-14 h-14 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center text-3xl mb-6 group-hover:bg-purple-600 group-hover:text-white transition">
                     <i class="ph-fill ph-user-focus"></i>
                 </div>
-                <h3 class="text-xl font-bold mb-2">First Wannakorn Profile</h3>
+                <h3 class="text-xl font-bold mb-2">First Wannakorn Profile (v1)</h3>
                 <p class="text-gray-500 text-sm mb-4">A futuristic, responsive WebApp parsing a complex Markdown
                     biography into an elegant, glassmorphic UI using Marked.js.</p>
                 <div class="flex flex-wrap gap-2 text-xs font-semibold text-gray-400">
                     <span class="bg-gray-100 px-2 py-1 rounded">Marked.js</span>
                     <span class="bg-gray-100 px-2 py-1 rounded">Tailwind</span>
-                    <span class="bg-gray-100 px-2 py-1 rounded">UI/UX</span>
+                </div>
+            </a>
+
+            <!-- Project 0.1: First Wannakorn Portfolio (v2) -->
+            <a href="./v2/index.html"
+                class="block bg-white rounded-2xl p-6 project-card border border-indigo-200 shadow-sm relative overflow-hidden group">
+                <div
+                    class="absolute top-0 right-0 bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg z-10">
+                    V2 PREM</div>
+                <div
+                    class="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center text-3xl mb-6 group-hover:bg-indigo-600 group-hover:text-white transition">
+                    <i class="ph-fill ph-sketch-logo"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Portfolio v2 (Premium)</h3>
+                <p class="text-gray-500 text-sm mb-4">A high-performance, single-page digital CV with a dark premium
+                    theme and zero build tools.</p>
+                <div class="flex flex-wrap gap-2 text-xs font-semibold text-gray-400">
+                    <span class="bg-gray-100 px-2 py-1 rounded">Zero-Build</span>
+                    <span class="bg-indigo-50 px-2 py-1 rounded text-indigo-500">Fast Load</span>
                 </div>
             </a>
 

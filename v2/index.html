@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FirstOne Wannakorn - Digital CV v2</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;600&family=Inter:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #ec4899;
+        }
+
+        body {
+            font-family: 'Anuphan', 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            scroll-behavior: smooth;
+        }
+
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #818cf8 0%, #f472b6 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-bg {
+            background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent),
+                radial-gradient(circle at bottom left, rgba(236, 72, 153, 0.1), transparent);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            border-color: rgba(129, 140, 248, 0.4);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body class="hero-bg min-h-screen">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass border-b border-slate-700/50 px-6 py-4">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="text-xl font-bold tracking-tighter flex items-center gap-2">
+                <span
+                    class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center text-white text-sm">F1</span>
+                FIRSTONE
+            </div>
+            <div class="hidden md:flex gap-8 text-sm font-medium text-slate-400">
+                <a href="#about" class="nav-link hover:text-white transition">เกี่ยวกับ</a>
+                <a href="#acting" class="nav-link hover:text-white transition">การแสดง</a>
+                <a href="#music" class="nav-link hover:text-white transition">ดนตรี</a>
+                <a href="#awards" class="nav-link hover:text-white transition">รางวัล</a>
+            </div>
+            <a href="https://github.com/thanarat0469-ctrl"
+                class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-full text-sm font-semibold transition shadow-lg shadow-indigo-500/20">
+                Contact
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 px-6">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12">
+            <div class="flex-1 text-center md:text-left">
+                <div
+                    class="inline-block px-4 py-1.5 mb-6 rounded-full glass border-indigo-500/30 text-indigo-300 text-xs font-bold uppercase tracking-widest leading-none">
+                    Multihyphenate Artist
+                </div>
+                <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+                    ศิลปินพหุศักยภาพแห่ง<br><span class="gradient-text tracking-tight">ยุคสมัยใหม่</span>
+                </h1>
+                <p class="text-slate-400 text-lg mb-8 max-w-xl leading-relaxed">
+                    วรรณกร เรืองรัตน์ (เฟิร์สวัน) - การผสมผสานที่ลงตัวระหว่าง ทัศนคติวิศวกร จิตวิญญาณศิลปินดนตรี
+                    และฝีมือการแสดงที่ตราตรึงใจ
+                </p>
+                <div class="flex flex-wrap justify-center md:justify-start gap-4">
+                    <a href="#acting"
+                        class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-2xl transition border border-slate-700">
+                        <i class="ph ph-movie-projection"></i>
+                        ดูผลงานการแสดง
+                    </a>
+                    <a href="#music"
+                        class="flex items-center gap-2 px-6 py-3 text-indigo-400 hover:text-indigo-300 transition">
+                        ฟังผลงานเพลง <i class="ph ph-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="flex-1 relative">
+                <div class="w-72 h-72 md:w-96 md:h-96 mx-auto relative z-10 floating">
+                    <div class="absolute inset-0 bg-indigo-500 blur-3xl opacity-20 animate-pulse"></div>
+                    <img src="../firstone-portfolio/images/profile.png" alt="FirstOne Profile"
+                        class="w-full h-full object-cover rounded-3xl border-2 border-slate-700 shadow-2xl relative z-10">
+                </div>
+                <!-- Decorative assets -->
+                <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-pink-500 blur-3xl opacity-20"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 px-6 glass">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="md:col-span-1">
+                    <h2 class="text-3xl font-bold mb-4">ข้อมูลพื้นฐาน</h2>
+                    <div class="h-1 w-20 bg-indigo-500 rounded-full mb-8"></div>
+                    <ul class="space-y-4">
+                        <li class="flex items-center gap-3 text-slate-400">
+                            <i class="ph ph-user text-indigo-400"></i>
+                            <span class="text-white font-medium">ชื่อจริง:</span> วรรณกร เรืองรัตน์
+                        </li>
+                        <li class="flex items-center gap-3 text-slate-400">
+                            <i class="ph ph-cake text-indigo-400"></i>
+                            <span class="text-white font-medium">วันเกิด:</span> 1 สิงหาคม 2543 (25 ปี)
+                        </li>
+                        <li class="flex items-center gap-3 text-slate-400">
+                            <i class="ph ph-ruler text-indigo-400"></i>
+                            <span class="text-white font-medium">ส่วนสูง:</span> 177 ซม.
+                        </li>
+                        <li class="flex items-center gap-3 text-slate-400">
+                            <i class="ph ph-graduation-cap text-indigo-400"></i>
+                            <span class="text-white font-medium">การศึกษา:</span> วิศวกรรมศาสตร์ มช.
+                        </li>
+                    </ul>
+                </div>
+                <div class="md:col-span-2 space-y-6">
+                    <h2 class="text-3xl font-bold mb-4">Biography</h2>
+                    <p class="text-slate-300 leading-relaxed">
+                        เฟิร์สวันคือนักแสดงและศิลปินภายใต้สังกัด **Domundi TV** และ **DMD Music**
+                        ผู้ที่ก้าวข้ามขีดจำกัดจากการเป็นเพียงนักแสดงซีรีส์วาย สู่การเป็นศิลปินพหุศักยภาพ
+                        ด้วยพื้นฐานการศึกษาจากคณะวิศวกรรมศาสตร์ มหาวิทยาลัยเชียงใหม่
+                        ทำให้เขามีภาพลักษณ์ที่น่าเชื่อถือและเข้าถึงได้ง่าย (Relatability)
+                    </p>
+                    <p class="text-slate-300 leading-relaxed">
+                        เขาไม่ได้มองว่างานแสดงคือจุดสิ้นสุด แต่ดนตรีคือแรงผลักดันหลักที่ทำให้เขาก้าวเข้าสู่วงการบันเทิง
+                        การทำงานอย่างหนักและการเป็นพื้นที่ปลอดภัย (Safe Space) ให้กับแฟนคลับ
+                        ทำให้เขาสถาปนาแบรนด์ส่วนตัวได้อย่างมั่นคง
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Acting Section -->
+    <section id="acting" class="py-24 px-6">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl font-bold mb-12 text-center flex items-center justify-center gap-4">
+                <i class="ph ph-film-strip text-indigo-500"></i>
+                Acting Career
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Project Card -->
+                <div class="glass p-6 rounded-3xl border border-slate-700/50 card-hover transition duration-300">
+                    <img src="../firstone-portfolio/images/love_upon.png" alt="ภพเธอ"
+                        class="w-full h-48 object-cover rounded-2xl mb-6 shadow-lg">
+                    <h3 class="text-xl font-bold mb-2">ภพเธอ (Love Upon a Time)</h3>
+                    <p class="text-slate-400 text-sm mb-4">ผลงานการแสดงเต็มตัวเรื่องแรกในแนวโรแมนติก พีเรียด แฟนตาซี</p>
+                    <span class="text-xs bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full font-bold">Debut
+                        Work</span>
+                </div>
+
+                <!-- Project Card -->
+                <div
+                    class="glass p-6 rounded-3xl border border-indigo-500/40 card-hover transition duration-300 ring-2 ring-indigo-500/20">
+                    <img src="../firstone-portfolio/images/khemjira.png" alt="เขมจิราต้องรอด"
+                        class="w-full h-48 object-cover rounded-2xl mb-6 shadow-lg">
+                    <h3 class="text-xl font-bold mb-2">เขมจิราต้องรอด</h3>
+                    <p class="text-slate-400 text-sm mb-4">บทบาท "เจตนา" (บักเจต)
+                        เด็กหนุ่มผู้มีวิชาอาคมและจิตใจที่จริงใจ</p>
+                    <div class="flex gap-2">
+                        <span class="text-xs bg-slate-800 text-indigo-300 px-3 py-1 rounded-full font-bold">Award
+                            Winning</span>
+                        <span class="text-xs bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full font-bold">Must
+                            Watch</span>
+                    </div>
+                </div>
+
+                <!-- Project Card -->
+                <div class="glass p-6 rounded-3xl border border-slate-700/50 card-hover transition duration-300">
+                    <img src="../firstone-portfolio/images/youtuber.png" alt="You(r)tuber"
+                        class="w-full h-48 object-cover rounded-2xl mb-6 shadow-lg">
+                    <h3 class="text-xl font-bold mb-2">You(r)tuber Series</h3>
+                    <p class="text-slate-400 text-sm mb-4">ก้าวสำคัญในบทนำเต็มตัว ถ่ายทอดชีวิตในแวดวง Content Creator
+                    </p>
+                    <span class="text-xs bg-slate-800 text-slate-300 px-3 py-1 rounded-full font-bold">Upcoming</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Music Section -->
+    <section id="music" class="py-24 px-6 bg-slate-900/50">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-16">
+            <div class="flex-1 order-2 md:order-1">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-indigo-600/10 border border-indigo-500/30 p-8 rounded-3xl text-center">
+                        <div class="text-4xl font-bold text-white mb-2 italic">01</div>
+                        <div class="text-sm text-indigo-300 uppercase font-bold tracking-widest">Single</div>
+                        <p class="text-white font-semibold mt-4">First Love</p>
+                    </div>
+                    <div class="bg-slate-800/50 border border-slate-700 p-8 rounded-3xl text-center">
+                        <i class="ph ph-microphone-stage text-4xl text-pink-500 mb-2"></i>
+                        <div class="text-sm text-slate-400 uppercase font-bold tracking-widest">Festival</div>
+                        <p class="text-white font-semibold mt-4">BEATFOREST 2026</p>
+                    </div>
+                    <div class="col-span-2 glass p-6 rounded-3xl flex items-center gap-6">
+                        <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center">
+                            <i class="ph ph-vinyl-record text-4xl text-indigo-400"></i>
+                        </div>
+                        <div>
+                            <p class="text-white font-bold text-lg">DMD Music Official Artist</p>
+                            <p class="text-slate-400 text-sm italic">"ดนตรีคือเหตุผลหลักที่ผมเข้าสู่วงการ"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 order-1 md:order-2">
+                <h2 class="text-4xl font-bold mb-6">Musical Identity</h2>
+                <div class="h-1 w-20 bg-pink-500 rounded-full mb-8"></div>
+                <p class="text-slate-300 text-lg mb-8 leading-relaxed">
+                    เป้าหมายที่ชัดเจนที่สุดของเฟิร์สวันคือการเป็น "ศิลปินเพลง" เขาเปิดตัวเป็นศิลปินเดี่ยวด้วยซิงเกิล
+                    **"First Love"** ที่เน้นอารมณ์คลั่งรักและเป็นพื้นที่ปลอดภัยให้แฟนคลับ
+                    ความสามารถในการถ่ายทอดอารมณ์ผ่านน้ำเสียงที่เป็นเอกลักษณ์ (High-quality vocals)
+                    ทำให้เขาได้รับการยอมรับในฐานะนักร้องตัวจริง
+                </p>
+                <ul class="space-y-4">
+                    <li class="flex items-center gap-4">
+                        <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
+                        <span>OST. เขมจิราต้องรอด (Reality, With You Always)</span>
+                    </li>
+                    <li class="flex items-center gap-4">
+                        <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
+                        <span>Original Single: First Love (Debut April 2025)</span>
+                    </li>
+                    <li class="flex items-center gap-4">
+                        <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
+                        <span>Live Performance at BEATFOREST 2026</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Awards Section -->
+    <section id="awards" class="py-24 px-6">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-4">Achievements</h2>
+            <p class="text-slate-400 mb-16">ความสำเร็จที่การันตีฝีมือจากเวที Y Universe Awards 2025</p>
+
+            <div class="space-y-6">
+                <div class="flex items-center gap-6 glass p-6 rounded-3xl border-l-4 border-indigo-500">
+                    <i class="ph-fill ph-trophy text-5xl text-yellow-500"></i>
+                    <div class="text-left">
+                        <h4 class="text-xl font-bold">The Best Supportive</h4>
+                        <p class="text-slate-400">รางวัลนักแสดงสมทบยอดเยี่ยม (บทเจตนา จาก เขมจิราต้องรอด)</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-6 glass p-6 rounded-3xl border-l-4 border-pink-500">
+                    <i class="ph-fill ph-heart text-5xl text-pink-500"></i>
+                    <div class="text-left">
+                        <h4 class="text-xl font-bold">The Best Cuties</h4>
+                        <p class="text-slate-400">รางวัลนักแสดงที่มีเสน่ห์ดึงดูดและเป็นที่รักของแฟนคลับ</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-6 glass p-6 rounded-3xl border-l-4 border-teal-500">
+                    <i class="ph-fill ph-sparkle text-5xl text-teal-400"></i>
+                    <div class="text-left">
+                        <h4 class="text-xl font-bold">Rising Star</h4>
+                        <p class="text-slate-400">รางวัลดาวรุ่งพุ่งแรงที่มีศักยภาพสูงสุดในอุตสาหกรรม</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fanclub Section -->
+    <section class="py-24 px-6 bg-indigo-600/10">
+        <div class="max-w-3xl mx-auto text-center">
+            <div class="w-20 h-20 bg-white p-3 rounded-full mx-auto mb-8 shadow-xl">
+                <img src="../firstone-portfolio/images/rainy.png" alt="Rainy Mascot"
+                    class="w-full h-full object-contain">
+            </div>
+            <h2 class="text-3xl font-bold mb-4 italic">"ติดฝน" (Tidfon)</h2>
+            <p class="text-slate-400 mb-8 italic">Patience • Trust • Support</p>
+            <p class="text-slate-300 leading-relaxed max-w-xl mx-auto">
+                สายสัมพันธ์อันเหนียวแน่นระหว่างพาร์ทเนอร์ เติ้ล-เฟิร์สวัน ที่ก่อตัวเป็นกลุ่มแฟนคลับที่อบอุ่นที่สุด
+                พร้อมเคียงข้างกันในทุกวันที่ฝนพรำ
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 border-t border-slate-800 text-center px-6">
+        <p class="text-slate-500 text-sm">© 2026 FirstOne Wannakorn Digital Resume v2. Created for Professional
+            Showcase.</p>
+        <div class="flex justify-center gap-6 mt-6">
+            <a href="#" class="text-slate-400 hover:text-white transition text-xl"><i
+                    class="ph ph-instagram-logo"></i></a>
+            <a href="#" class="text-slate-400 hover:text-white transition text-xl"><i
+                    class="ph ph-twitter-logo"></i></a>
+            <a href="#" class="text-slate-400 hover:text-white transition text-xl"><i
+                    class="ph ph-youtube-logo"></i></a>
+        </div>
+    </footer>
+
+</body>
+
+</html>
