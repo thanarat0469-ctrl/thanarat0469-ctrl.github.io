@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FirstOne - Wannakorn Ruengrat | CV</title>
+    <style>
+        :root {
+            --primary: #d83d73;
+            --text-main: #333;
+            --text-light: #666;
+            --bg-color: #fcfcfc;
+            --border: #eaeaea;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--bg-color);
+            padding: 2rem;
+        }
+
+        .cv-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 3rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 3rem;
+            border-top: 6px solid var(--primary);
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.2rem;
+            color: #111;
+            letter-spacing: -0.5px;
+        }
+
+        h2 {
+            font-size: 1.3rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.2rem;
+            color: #222;
+        }
+
+        p {
+            margin-bottom: 0.8rem;
+            font-size: 0.95rem;
+            color: var(--text-light);
+        }
+
+        /* Layout Sections */
+        .main-col {
+            padding-right: 1rem;
+        }
+
+        .side-col {
+            border-left: 1px solid var(--border);
+            padding-left: 2rem;
+        }
+
+        .header-section {
+            grid-column: 1 / -1;
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            font-weight: 300;
+        }
+
+        /* Items */
+        .cv-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .cv-item-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .date {
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-right: 0.4rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .contact-list {
+            list-style: none;
+        }
+
+        .contact-list li {
+            margin-bottom: 0.8rem;
+            font-size: 0.95rem;
+        }
+
+        .contact-list strong {
+            display: block;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: #888;
+        }
+
+        @media (max-width: 768px) {
+            .cv-container {
+                grid-template-columns: 1fr;
+                padding: 1.5rem;
+            }
+
+            .side-col {
+                border-left: none;
+                padding-left: 0;
+                border-top: 1px solid var(--border);
+                padding-top: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="cv-container">
+        <!-- Header -->
+        <header class="header-section">
+            <h1>Wannakorn Ruengrat</h1>
+            <p class="subtitle">FirstOne • Actor & Music Artist (Domundi TV / DMD Music)</p>
+        </header>
+
+        <!-- Main Column -->
+        <div class="main-col">
+            <section class="section">
+                <h2>Profile</h2>
+                <p>ศิลปินพหุศักยภาพ ภายใต้สังกัด Domundi TV และ DMD Music โดดเด่นด้านการแสดงและทักษะดนตรี
+                    เป็นที่รู้จักในฐานะนักแสดงผู้คว้ารางวัลจากการรับบทบาทซับซ้อน
+                    และเป็นศิลปินเดี่ยวที่มีเอกลักษณ์เฉพาะตัว</p>
+            </section>
+
+            <section class="section">
+                <h2>Acting Experience</h2>
+                <div class="cv-item">
+                    <div class="cv-item-title">
+                        <h3>You(r)tuber Series</h3>
+                        <span class="date">Upcoming</span>
+                    </div>
+                    <p><strong>Role:</strong> Lead Actor</p>
+                    <p>รับบทนักแสดงนำในซีรีส์ที่สะท้อนถึงชีวิตจริงในฐานะ Content Creator ร่วมกับเติ้ล มติมันท์</p>
+                </div>
+
+                <div class="cv-item">
+                    <div class="cv-item-title">
+                        <h3>เขมจิราต้องรอด (Khemjira The Series)</h3>
+                        <span class="date">2024-2025</span>
+                    </div>
+                    <p><strong>Role:</strong> เจตนา (บักเจต)</p>
+                    <p>บทบาทแสดงนำสมทบที่มีความซับซ้อน โผงผางและมีวิชาอาคม ซึ่งส่งผลให้กวาดรางวัลจากสถาบัน Y Universe
+                        Awards 2025</p>
+                </div>
+
+                <div class="cv-item">
+                    <div class="cv-item-title">
+                        <h3>ภพเธอ (Love Upon a Time)</h3>
+                        <span class="date">Debut</span>
+                    </div>
+                    <p><strong>Role:</strong> Supporting</p>
+                    <p>ผลงานเปิดตัวในวงการแสดง กับซีรีส์โรแมนติก แฟนตาซี พีเรียดย้อนเวลา</p>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>Musical Career</h2>
+                <div class="cv-item">
+                    <div class="cv-item-title">
+                        <h3>First Love (Debut Single)</h3>
+                        <span class="date">April 2025</span>
+                    </div>
+                    <p>ศิลปินเดี่ยวภายใต้ค่าย DMD Music ถ่ายทอดพลังบวกและความเป็นพื้นที่ปลอดภัย</p>
+                </div>
+                <div class="cv-item">
+                    <div class="cv-item-title">
+                        <h3>Original Soundtracks & Features</h3>
+                        <span class="date">2024 - Present</span>
+                    </div>
+                    <p>ร้องเพลงประกอบซีรีส์ Reality, With You Always, เริ่มใหม่อีกครั้ง และเข้าร่วมเทศกาลดนตรี
+                        BEATFOREST 2026</p>
+            </section>
+
+            <section class="section">
+                <h2>Workshop Projects</h2>
+                <div class="cv-item">
+                    <div class="cv-item-title">
+                        <h3>GPS Journey: Chiang Mai → Phitsanulok</h3>
+                    </div>
+                    <p>การแสดงผลข้อมูล GPS จาก Workshop ของ Two Rivers Oracle</p>
+                    <div style="margin-top: 10px;">
+                        <a href="travel-map.html" class="tag"
+                            style="text-decoration: none; background: var(--primary); color: white;">View 2D Map
+                            (Leaflet)</a>
+                        <a href="travel-3d.html" class="tag"
+                            style="text-decoration: none; background: #333; color: white;">View 3D Voyage (Three.js)</a>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Side Column -->
+        <div class="side-col">
+            <section class="section">
+                <h2>Personal Info</h2>
+                <ul class="contact-list">
+                    <li>
+                        <strong>Name</strong>
+                        วรรณกร เรืองรัตน์
+                    </li>
+                    <li>
+                        <strong>Date of Birth</strong>
+                        1 August 2000
+                    </li>
+                    <li>
+                        <strong>Height</strong>
+                        176 - 177 cm
+                    </li>
+                    <li>
+                        <strong>Agency</strong>
+                        Domundi TV
+                    </li>
+                </ul>
+            </section>
+
+            <section class="section">
+                <h2>Education</h2>
+                <div class="cv-item">
+                    <h3>Chiang Mai University</h3>
+                    <p style="margin-bottom: 0;">Faculty of Engineering</p>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>Awards</h2>
+                <div class="cv-item">
+                    <h3>Y Universe Awards 2025</h3>
+                    <p style="margin-bottom: 0.5rem">ชนะ 3 รางวัล:</p>
+                    <div>
+                        <span class="tag">The Best Supportive</span>
+                        <span class="tag">The Best Cuties</span>
+                        <span class="tag">Rising Star</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>Fandom</h2>
+                <ul class="contact-list">
+                    <li>
+                        <strong>Fandom Name</strong>
+                        ติดฝน (Tidfon) ☔️
+                    </li>
+                    <li>
+                        <strong>Partner</strong>
+                        เติ้ล มติมันท์
+                    </li>
+                </ul>
+            </section>
+        </div>
+    </div>
+</body>
+
+</html>

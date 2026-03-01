@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D GPS Journey - Chiang Mai to Phitsanulok</title>
+    <style>
+        :root {
+            --primary: #d83d73;
+            --glass: rgba(15, 15, 15, 0.7);
+        }
+
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+
+        #ui-container {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            pointer-events: none;
+        }
+
+        .glass-panel {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            color: #fff;
+        }
+
+        h1 {
+            margin: 0 0 8px 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.02em;
+        }
+
+        .data-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: #ddd;
+            margin-bottom: 5px;
+        }
+
+        .data-row strong {
+            color: #fff;
+        }
+
+        #stats-overlay {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            text-align: right;
+            pointer-events: none;
+        }
+
+        .battery-badge {
+            font-family: 'Monaco', monospace;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-shadow: 0 0 15px var(--primary);
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #555;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .footer span {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #050505;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.8s ease;
+        }
+
+        .loader {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(216, 61, 115, 0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading-screen">
+        <div class="loader"></div>
+        <p style="color: #666; margin-top: 15px; font-size: 0.8rem;">Initializing 3D Universe...</p>
+    </div>
+
+    <div id="ui-container">
+        <div class="glass-panel">
+            <h1>GPS VOYAGE TRACE</h1>
+            <div class="data-row">📍 <strong id="current-loc">Loading...</strong></div>
+            <div class="data-row">🕒 <span id="current-time">--:--:--</span></div>
+        </div>
+    </div>
+
+    <div id="stats-overlay">
+        <div class="battery-badge" id="battery-val">--%</div>
+        <div style="color: #444; font-size: 0.7rem; font-weight: bold;">BATTERY STATUS</div>
+    </div>
+
+    <div class="footer">🤖 Oracle Workshop • <span>Portfolio Builder</span> ⛰️</div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        let scene, camera, renderer, controls;
+        let pathLine, train, waypoints = [];
+        let stars;
+        let progress = 0;
+        const trainSpeed = 0.0004;
+
+        init();
+
+        async function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x020205);
+            scene.fog = new THREE.FogExp2(0x020205, 0.0015);
+
+            camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 2000);
+            camera.position.set(80, 60, 80);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.toneMapping = THREE.ReinhardToneMapping;
+            document.body.appendChild(renderer.domElement);
+
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxDistance = 400;
+
+            // Lights
+            scene.add(new THREE.AmbientLight(0x444444));
+            const sun = new THREE.DirectionalLight(0xffffff, 1);
+            sun.position.set(50, 100, 50);
+            scene.add(sun);
+
+            // Starfield
+            createStarfield();
+
+            // Grid
+            const grid = new THREE.GridHelper(500, 50, 0x111111, 0x080808);
+            grid.position.y = -2;
+            scene.add(grid);
+
+            // Data Loading
+            try {
+                const response = await fetch('./travel-phitsanulok.csv');
+                const csvText = await response.text();
+                waypoints = parseCSV(csvText);
+
+                if (waypoints.length > 0) {
+                    createVisualization(waypoints);
+                    document.getElementById('loading-screen').style.opacity = '0';
+                    setTimeout(() => document.getElementById('loading-screen').remove(), 800);
+                    animate();
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('current-loc').innerText = "Data Error";
+            }
+        }
+
+        function createStarfield() {
+            const geo = new THREE.BufferGeometry();
+            const count = 5000;
+            const pos = new Float32Array(count * 3);
+            for (let i = 0; i < count * 3; i++) pos[i] = (Math.random() - 0.5) * 1500;
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            const mat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.7, transparent: true, opacity: 0.8 });
+            stars = new THREE.Points(geo, mat);
+            scene.add(stars);
+        }
+
+        function parseCSV(text) {
+            const rows = text.split('\n').filter(r => r.trim() !== '');
+            const headers = rows[0].split(',').map(h => h.trim());
+            const indices = {
+                lat: headers.indexOf('lat'),
+                lon: headers.indexOf('lon'),
+                bat: headers.indexOf('battery'),
+                time: headers.indexOf('updated'),
+                loc: headers.indexOf('locality')
+            };
+
+            const data = [];
+            let ref = null;
+
+            for (let i = 1; i < rows.length; i++) {
+                const cols = rows[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                const lat = parseFloat(cols[indices.lat]);
+                const lon = parseFloat(cols[indices.lon]);
+                if (isNaN(lat) || isNaN(lon)) continue;
+
+                if (!ref) ref = { lat, lon };
+
+                // Vertical rise based on timeline sequence
+                const elevation = (i / rows.length) * 12;
+
+                data.push({
+                    pos: new THREE.Vector3((lon - ref.lon) * 120, elevation, (ref.lat - lat) * 120),
+                    battery: cols[indices.bat]?.replace(/"/g, ''),
+                    time: cols[indices.time]?.replace(/"/g, '').split(' ')[1] || '--:--',
+                    place: cols[indices.loc]?.replace(/"/g, '') || "On the Road"
+                });
+            }
+            return data;
+        }
+
+        function createVisualization(data) {
+            const points = data.map(d => d.pos);
+            const curve = new THREE.CatmullRomCurve3(points);
+
+            // Path Line (Glow effect)
+            const pathGeo = new THREE.BufferGeometry().setFromPoints(curve.getPoints(500));
+            pathLine = new THREE.Line(pathGeo, new THREE.LineBasicMaterial({ color: 0xd83d73, transparent: true, opacity: 0.4 }));
+            scene.add(pathLine);
+
+            // Train (Neon sleek shape)
+            const group = new THREE.Group();
+            const core = new THREE.Mesh(
+                new THREE.CapsuleGeometry(0.6, 1.5, 4, 8),
+                new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xd83d73, emissiveIntensity: 2 })
+            );
+            core.rotation.x = Math.PI / 2;
+            group.add(core);
+
+            const glow = new THREE.PointLight(0xd83d73, 15, 30);
+            group.add(glow);
+
+            train = group;
+            scene.add(train);
+
+            // Markers
+            const markGeo = new THREE.IcosahedronGeometry(0.8);
+            const start = new THREE.Mesh(markGeo, new THREE.MeshStandardMaterial({ color: 0x00ff88, emissive: 0x00ff88 }));
+            start.position.copy(points[0]);
+            scene.add(start);
+
+            const end = new THREE.Mesh(markGeo, new THREE.MeshStandardMaterial({ color: 0xff3344, emissive: 0xff3344 }));
+            end.position.copy(points[points.length - 1]);
+            scene.add(end);
+
+            controls.target.copy(points[0]);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (train && waypoints.length > 0) {
+                progress += trainSpeed;
+                if (progress > 1) progress = 0;
+
+                const curve = new THREE.CatmullRomCurve3(waypoints.map(w => w.pos));
+                const pos = curve.getPoint(progress);
+                const tangent = curve.getTangent(progress);
+
+                train.position.copy(pos);
+                train.lookAt(pos.clone().add(tangent));
+
+                const idx = Math.floor(progress * (waypoints.length - 1));
+                const current = waypoints[idx];
+
+                document.getElementById('current-loc').innerText = current.place;
+                document.getElementById('current-time').innerText = current.time;
+                document.getElementById('battery-val').innerText = `${current.bat || current.battery}%`;
+
+                // Smooth camera follow
+                const offset = new THREE.Vector3(40, 30, 40);
+                camera.position.lerp(pos.clone().add(offset), 0.03);
+                controls.target.lerp(pos, 0.05);
+            }
+
+            stars.rotation.y += 0.0002;
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+
+</html>

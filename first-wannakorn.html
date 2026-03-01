@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FirstOne - First Wannakorn</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0d0f12;
+            color: #e2e8f0;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d0f12;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        h1, h2, h3, h4, .serif {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #a78bfa, #f472b6, #fb923c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Markdown Styles */
+        #content-area {
+            color: #cbd5e1;
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+
+        #content-area h1 {
+            font-size: 2.5rem;
+            color: #ffffff;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+            line-height: 1.3;
+            text-align: center;
+        }
+
+        #content-area h2 {
+            font-size: 1.8rem;
+            color: #f8fafc;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 0.5rem;
+        }
+
+        #content-area h3 {
+            font-size: 1.4rem;
+            color: #e2e8f0;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        #content-area p {
+            margin-bottom: 1.5rem;
+        }
+
+        #content-area ul {
+            list-style-type: none;
+            padding-left: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        #content-area ul li {
+            position: relative;
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+        }
+
+        #content-area ul li::before {
+            content: "✦";
+            position: absolute;
+            left: 0;
+            color: #a78bfa;
+            font-size: 0.9em;
+        }
+
+        #content-area pre {
+            background: #1e293b;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        #content-area code {
+            font-family: monospace;
+            background: #1e293b;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.9em;
+            color: #f472b6;
+        }
+
+        #content-area a {
+            color: #a78bfa;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            word-break: break-all;
+        }
+
+        #content-area a:hover {
+            color: #f472b6;
+            text-decoration: underline;
+        }
+        
+        #content-area blockquote {
+             border-left: 4px solid #a78bfa;
+             padding-left: 1rem;
+             color: #94a3b8;
+             font-style: italic;
+             margin-bottom: 1.5rem;
+             background: rgba(30, 41, 59, 0.2);
+             padding: 1rem;
+             border-radius: 0 0.5rem 0.5rem 0;
+        }
+
+        /* Table styling for markdown */
+        #content-area table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+            background: rgba(30, 41, 59, 0.2);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            display: block;
+            overflow-x: auto;
+        }
+
+        #content-area th, #content-area td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        #content-area th {
+            background: rgba(30, 41, 59, 0.5);
+            color: #f8fafc;
+            font-family: 'Playfair Display', serif;
+            letter-spacing: 0.05em;
+        }
+
+        #content-area tr:last-child td {
+            border-bottom: none;
+        }
+        
+        #content-area tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+
+        .animate-fade-in {
+            animation: fadeIn 1s ease-out forwards;
+        }
+        
+        .animate-slide-up {
+            opacity: 0;
+            animation: slideUp 0.8s ease-out forwards;
+        }
+
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Floating elements background */
+        .blobs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out alternate;
+        }
+
+        .blob-1 {
+            width: 40vw;
+            height: 40vw;
+            background: radial-gradient(circle, #a78bfa 0%, transparent 70%);
+            top: -10%;
+            left: -10%;
+        }
+
+        .blob-2 {
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, #f472b6 0%, transparent 70%);
+            bottom: -20%;
+            right: -10%;
+            animation-delay: -5s;
+        }
+        
+        .blob-3 {
+            width: 30vw;
+            height: 30vw;
+            background: radial-gradient(circle, #38bdf8 0%, transparent 70%);
+            top: 40%;
+            left: 40%;
+            opacity: 0.2;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(5%, 5%) scale(1.1); }
+            100% { transform: translate(-5%, 10%) scale(0.9); }
+        }
+
+        #loading {
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+
+<body class="antialiased selection:bg-purple-500/30 selection:text-white">
+
+    <!-- Background Decoration -->
+    <div class="blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 top-0 transition-all duration-300 glass-panel border-b-0 border-t-0 border-l-0 border-r-0 border-b border-white/5" id="navbar">
+        <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="cv.html" class="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group">
+                <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                    <i class="ph ph-arrow-left text-xl"></i>
+                </div>
+                <span class="font-medium text-sm tracking-widest uppercase">Portfolio</span>
+            </a>
+            <div class="text-xl font-bold tracking-widest uppercase text-white">
+                FIRST<span class="text-purple-400">ONE</span>
+            </div>
+            <div class="w-10"></div> <!-- Spacer for flex alignment -->
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="relative z-10 pt-32 pb-24 px-6 min-h-screen flex flex-col items-center">
+        
+        <!-- Hero Section -->
+        <div class="max-w-4xl w-full text-center mb-16 animate-slide-up">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-sm text-purple-300 mb-6 font-medium tracking-wider uppercase border border-purple-500/20">
+                <i class="ph-fill ph-star"></i> Artist Profile Analysis
+            </div>
+            <!-- The H1 will be injected by markdown, but we can set a placeholder here -->
+        </div>
+
+        <!-- Article Container -->
+        <article class="max-w-4xl w-full glass-panel rounded-3xl p-8 md:p-14 animate-slide-up delay-100 relative overflow-hidden">
+            <!-- Decorative corner accent -->
+            <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-bl-full pointer-events-none"></div>
+            
+            <div id="loading" class="flex flex-col items-center justify-center py-20 text-gray-400">
+                <i class="ph ph-spinner-gap text-4xl animate-spin text-purple-400 mb-4"></i>
+                <p class="font-medium tracking-wider uppercase text-sm">Decoding Profile Data...</p>
+            </div>
+
+            <div id="content-area" class="hidden opacity-0 transition-opacity duration-1000">
+                <!-- Markdown content will be injected here -->
+            </div>
+        </article>
+
+        <!-- Footer -->
+        <footer class="mt-20 text-center text-gray-500 text-sm font-medium tracking-wider uppercase animate-slide-up delay-300">
+            <p>Data Extracted from Provided Blockchain Prompt</p>
+            <p class="mt-2 opacity-50">© 2026 Developer Portfolio</p>
+        </footer>
+
+    </main>
+
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 20) {
+                nav.style.backgroundColor = 'rgba(13, 15, 18, 0.85)';
+            } else {
+                nav.style.backgroundColor = 'rgba(30, 41, 59, 0.4)';
+            }
+        });
+
+        // Load and parse Markdown
+        async function loadMarkdown() {
+            const contentArea = document.getElementById('content-area');
+            const loading = document.getElementById('loading');
+
+            try {
+                // Fetch the markdown file we copied over
+                const response = await fetch('./first-wannakorn.md');
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load markdown: ${response.statusText}`);
+                }
+
+                const markdownText = await response.text();
+
+                // Configure marked slightly for better security/formatting if needed
+                marked.setOptions({
+                    breaks: true,
+                    gfm: true
+                });
+
+                // Parse the markdown
+                const htmlContent = marked.parse(markdownText);
+                
+                // Inject the HTML
+                contentArea.innerHTML = htmlContent;
+
+                // Add special span to the main title if it exists to make it a gradient
+                const mainTitle = contentArea.querySelector('h1');
+                if (mainTitle) {
+                    const text = mainTitle.innerText;
+                    // Make part of the text gradient (e.g., the name)
+                    mainTitle.innerHTML = text.replace('เฟิร์สวัน วรรณกร', '<span class="gradient-text">เฟิร์สวัน วรรณกร</span>');
+                }
+
+                // Hide loading, show content with fade
+                loading.style.opacity = '0';
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    contentArea.classList.remove('hidden');
+                    // Trigger reflow
+                    void contentArea.offsetWidth;
+                    contentArea.style.opacity = '1';
+                }, 500);
+
+            } catch (error) {
+                console.error("Error parsing markdown:", error);
+                loading.innerHTML = `
+                    <i class="ph-fill ph-warning-circle text-4xl text-red-400 mb-4"></i>
+                    <p class="text-red-300">Failed to load content.</p>
+                    <p class="text-sm text-gray-500 mt-2">${error.message}</p>
+                `;
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', loadMarkdown);
+    </script>
+</body>
+
+</html>
