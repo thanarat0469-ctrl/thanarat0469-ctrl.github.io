@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Train Journey: Chiang Mai - Phitsanulok</title>
+
+    <!-- Maplibre GL -->
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+
+    <!-- Three.js (For 3D Train) -->
+    <script src="https://unpkg.com/three@0.147.0/build/three.min.js"></script>
+
+    <!-- PapaParse & Turf.js (For Data and Route Math) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: #0d0d0d;
+            font-family: 'Kanit', sans-serif;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            z-index: 1;
+        }
+
+        .dashboard {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            width: 340px;
+            background: rgba(15, 15, 20, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 22px;
+            color: #00e676;
+            letter-spacing: 0.5px;
+        }
+
+        .subtitle {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .station-card {
+            background: rgba(0, 230, 118, 0.1);
+            border-left: 4px solid #00e676;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .station-card .label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .station-card .value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            margin-top: 5px;
+        }
+
+        .station-card .sub-value {
+            font-size: 13px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #00e676, #00b0ff);
+            color: #000;
+            font-weight: 600;
+            font-size: 16px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 230, 118, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 230, 118, 0.6);
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px 40px;
+            border-radius: 12px;
+            z-index: 2000;
+            color: #00e676;
+            font-size: 1.2rem;
+            border: 1px solid #333;
+            box-shadow: 0 0 30px rgba(0, 230, 118, 0.2);
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading">⏳ กำลังสร้างโลก 3 มิติ...</div>
+    <div id="map"></div>
+
+    <div class="dashboard">
+        <h1>🚄 3D Train Journey</h1>
+        <span class="subtitle">Chiang Mai ➔ Phitsanulok</span>
+
+        <div class="station-card">
+            <div class="label">Current Location / Station</div>
+            <div class="value" id="current-station">เตรียมออกเดินทาง...</div>
+            <div class="sub-value" id="battery-info">🔋 Tracker Battery: --%</div>
+            <div class="sub-value" style="color:#00b0ff" id="time-info">🕒 Time: --:--</div>
+        </div>
+
+        <button class="btn" id="toggle-camera">🎥 เลิกซูมตามรถไฟ (Free Camera)</button>
+    </div>
+
+    <script>
+        // กำหนดแผนที่ 3D เริ่มต้น
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+            center: [99.5, 17.8],
+            zoom: 9,
+            pitch: 65,
+            bearing: -20,
+            antialias: true
+        });
+
+        // สถานะการติดตามรถไฟ
+        let isCameraFollowing = true;
+        document.getElementById('toggle-camera').addEventListener('click', (e) => {
+            isCameraFollowing = !isCameraFollowing;
+            if (isCameraFollowing) {
+                e.target.innerHTML = "🎥 เลิกซูมตามรถไฟ (Free Camera)";
+                e.target.style.background = "linear-gradient(135deg, #00e676, #00b0ff)";
+                e.target.style.color = "#000";
+            } else {
+                e.target.innerHTML = "🚂 ซูมตามรถไฟ (Follow Train)";
+                e.target.style.background = "#222";
+                e.target.style.color = "#fff";
+            }
+        });
+
+        const csvUrl = 'https://raw.githubusercontent.com/Soul-Brews-Studio/two-rivers-oracle/main/ψ/lab/github-pages-workshop/travel-phitsanulok.csv';
+
+        Papa.parse(csvUrl, {
+            download: true,
+            header: true,
+            dynamicTyping: true,
+            skipEmptyLines: true,
+            complete: function (results) {
+                document.getElementById('loading').style.display = 'none';
+                const data = results.data;
+                const coords = [];
+                const stations = [];
+                let lastStation = '';
+
+                // อ่านและคำนวณข้อมูลจุดแวะพัก (Stations)
+                data.forEach(row => {
+                    const lat = parseFloat(row.lat);
+                    const lon = parseFloat(row.lon);
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        coords.push([lon, lat]);
+
+                        const placeName = row.place || row.locality;
+                        // เงื่อนไขในการดึงสถานี: หาจุดที่ชื่อสถานที่ไม่ซ้ำเดิม และมีชื่อชัดเจน
+                        if (placeName && placeName !== lastStation && placeName.length > 2) {
+                            let timeStr = row.updated;
+                            if (timeStr) {
+                                const d = new Date(timeStr);
+                                if (!isNaN(d.getTime())) timeStr = d.toLocaleTimeString('th-TH');
+                            }
+                            stations.push({
+                                name: placeName,
+                                coordinates: [lon, lat],
+                                battery: row.battery,
+                                time: timeStr
+                            });
+                            lastStation = placeName;
+                        }
+                    }
+                });
+
+                if (coords.length < 2) return;
+
+                // แปลงรายการพิกัดให้เป็นเส้นทาง (Route Line) สำหรับใช้วาดและวิ่งตาม
+                const routeLine = turf.lineString(coords);
+
+                map.on('load', () => {
+
+                    // เส้นทางหลัก (Source)
+                    map.addSource('route', { 'type': 'geojson', 'data': routeLine });
+
+                    // สถานี (Source)
+                    const stationsGeoJSON = {
+                        'type': 'FeatureCollection',
+                        'features': stations.map(s => ({
+                            'type': 'Feature',
+                            'geometry': { 'type': 'Point', 'coordinates': s.coordinates },
+                            'properties': { 'title': s.name }
+                        }))
+                    };
+                    map.addSource('stations', { 'type': 'geojson', 'data': stationsGeoJSON });
+
+                    // -- ชั้น 1: ไม้หมอนรถไฟ (Wood Sleepers) --
+                    map.addLayer({
+                        'id': 'route-sleepers',
+                        'type': 'line',
+                        'source': 'route',
+                        'layout': { 'line-join': 'miter', 'line-cap': 'butt' },
+                        'paint': {
+                            'line-color': '#4a2511', // สีน้ำตาลไม้เข้ม
+                            'line-width': ['interpolate', ['linear'], ['zoom'], 8, 4, 15, 24], // ขนาดเปลี่ยนตามซูม
+                            'line-dasharray': [0.1, 1.5] // ทำเป็นซี่ๆ
+                        }
+                    });
+
+                    // -- ชั้น 2: รางเหล็กซ้าย (Left Track) --
+                    map.addLayer({
+                        'id': 'route-track-left',
+                        'type': 'line',
+                        'source': 'route',
+                        'layout': { 'line-join': 'round', 'line-cap': 'round' },
+                        'paint': {
+                            'line-color': '#adadc9', // สีเหล็ก
+                            'line-width': ['interpolate', ['linear'], ['zoom'], 8, 1, 15, 4],
+                            'line-offset': ['interpolate', ['linear'], ['zoom'], 8, -2, 15, -8]
+                        }
+                    });
+
+                    // -- ชั้น 3: รางเหล็กขวา (Right Track) --
+                    map.addLayer({
+                        'id': 'route-track-right',
+                        'type': 'line',
+                        'source': 'route',
+                        'layout': { 'line-join': 'round', 'line-cap': 'round' },
+                        'paint': {
+                            'line-color': '#adadc9',
+                            'line-width': ['interpolate', ['linear'], ['zoom'], 8, 1, 15, 4],
+                            'line-offset': ['interpolate', ['linear'], ['zoom'], 8, 2, 15, 8]
+                        }
+                    });
+
+                    // -- ชั้น 4: จุดแวะพัก (Station Points) --
+                    map.addLayer({
+                        'id': 'station-points',
+                        'type': 'circle',
+                        'source': 'stations',
+                        'paint': {
+                            'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 4, 15, 10],
+                            'circle-color': '#00e676',
+                            'circle-stroke-width': 2,
+                            'circle-stroke-color': '#000',
+                            'circle-pitch-alignment': 'map'
+                        }
+                    });
+
+                    // -- ชั้น 5: ป้ายชื่อจุดแวะพัก (Station Labels) --
+                    map.addLayer({
+                        'id': 'station-labels',
+                        'type': 'symbol',
+                        'source': 'stations',
+                        'layout': {
+                            'text-field': ['get', 'title'],
+                            'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                            'text-size': 13,
+                            'text-offset': [0, 1.5],
+                            'text-anchor': 'top'
+                        },
+                        'paint': {
+                            'text-color': '#00e676',
+                            'text-halo-color': '#111',
+                            'text-halo-width': 2
+                        }
+                    });
+
+                    // เริ่มการตั้งค่าโมเดลรถไฟ 3 มิติ และเริ่มเปิดการวิ่ง
+                    setup3DTrain(routeLine, stations);
+
+                    // ปรับกล้องไปที่จุดเริ่มต้น
+                    const startPos = coords[0];
+                    if (startPos) {
+                        map.jumpTo({ center: startPos, zoom: 14, pitch: 75 });
+                    }
+                });
+            }
+        });
+
+        // ฟังก์ชันสร้างรถไฟและอนิเมชัน
+        function setup3DTrain(routeLine, stations) {
+            const totalLength = turf.length(routeLine, { units: 'kilometers' });
+            let progress = 0;
+            const animationSpeedKmPerSec = totalLength / 180; // วิ่งจบรอบในเวลา 180 วินาที 
+            let lastTime = performance.now();
+
+            const customLayer = {
+                id: '3d-model',
+                type: 'custom',
+                renderingMode: '3d',
+                onAdd: function (map, gl) {
+                    this.camera = new THREE.Camera();
+                    this.scene = new THREE.Scene();
+
+                    // จัดแสงในโลก 3 มิติ
+                    this.scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+                    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+                    dirLight.position.set(50, -50, 100).normalize();
+                    this.scene.add(dirLight);
+
+                    // --- การต่อรูปทรงสร้าง [รถไฟ 3 มิติ] อย่างง่าย ---
+                    this.trainGroup = new THREE.Group();
+
+                    // 1. ตัวเครื่อง (Engine Body) - สีแดง
+                    const bodyMat = new THREE.MeshPhongMaterial({ color: 0xff3b30, shininess: 100 });
+                    const body = new THREE.Mesh(new THREE.BoxGeometry(4, 5, 12), bodyMat);
+                    body.position.set(0, 2.5, 0); // ยกขึ้นให้ติดพื้น
+                    this.trainGroup.add(body);
+
+                    // 2. ห้องคนขับ (Cabin) - สีเทาเข้ม
+                    const cabinMat = new THREE.MeshPhongMaterial({ color: 0x333333, shininess: 50 });
+                    const cabin = new THREE.Mesh(new THREE.BoxGeometry(4.2, 3, 4), cabinMat);
+                    cabin.position.set(0, 6.5, 3);
+                    this.trainGroup.add(cabin);
+
+                    // 3. แสงไฟหน้ารถ (Headlight Glow) - สีขาว
+                    const glowMat = new THREE.MeshBasicMaterial({ color: 0xffffaa });
+
+                    const glowGeo = new THREE.CylinderGeometry(1.2, 1.2, 0.5, 16);
+                    glowGeo.rotateX(Math.PI / 2);
+                    const glow = new THREE.Mesh(glowGeo, glowMat);
+                    glow.position.set(0, 3.5, -6.1); // อยู่ด้านหน้า
+                    this.trainGroup.add(glow);
+
+                    this.scene.add(this.trainGroup);
+                    this.map = map;
+
+                    this.renderer = new THREE.WebGLRenderer({
+                        canvas: map.getCanvas(),
+                        context: gl,
+                        antialias: true,
+                        powerPreference: "high-performance"
+                    });
+                    this.renderer.autoClear = false;
+                },
+                render: function (gl, matrix) {
+                    const now = performance.now();
+                    const dt = (now - lastTime) / 1000;
+                    lastTime = now;
+
+                    // ขยับรถไฟไปข้างหน้า
+                    progress += animationSpeedKmPerSec * dt;
+                    if (progress > totalLength) progress = 0; // ถึงปลายทางให้เริ่มใหม่
+
+                    // หาพิกัดปัจจุบัน
+                    const currentPt = turf.along(routeLine, progress, { units: 'kilometers' });
+                    // หาพิกัดข้างหน้า (เพื่อใช้หันหัวรถไฟ)
+                    const aheadPt = turf.along(routeLine, progress + 0.02, { units: 'kilometers' });
+
+                    const bearing = turf.bearing(currentPt, aheadPt);
+
+                    // ตรวจจับว่าอยู่ใกล้สถานีไหน และอัปเดตหน้าจอ
+                    let closestStation = 'Traveling...';
+                    let currentBat = '--%';
+                    let currentTime = '--:--';
+                    let minDist = Infinity;
+
+                    stations.forEach(s => {
+                        const p = turf.point(s.coordinates);
+                        const d = turf.distance(currentPt, p, { units: 'kilometers' });
+                        if (d < 5 && d < minDist) {
+                            closestStation = s.name;
+                            currentBat = s.battery ? s.battery + '%' : '--%';
+                            currentTime = s.time ? s.time : '--:--';
+                            minDist = d;
+                        }
+                    });
+
+                    document.getElementById('current-station').innerHTML = closestStation !== 'Traveling...' ? `📍 ${closestStation}` : `🚄 กำลังเดินทาง...`;
+                    document.getElementById('battery-info').innerHTML = `🔋 Tracker Battery: ${currentBat}`;
+                    document.getElementById('time-info').innerHTML = `🕒 Time: ${currentTime}`;
+
+                    // คำนวณการแปลง Matrix และมุมหมุน ให้รถไฟอยู่ในฉาก 3 มิติ ได้อย่างสมบูรณ์
+                    const lngLat = currentPt.geometry.coordinates;
+                    const mercator = maplibregl.MercatorCoordinate.fromLngLat(lngLat, 0);
+                    // ขยายขนาดรถไฟ 40 เมตร เพื่อให้ชัดเจนในกล้อง
+                    const scale = mercator.meterInMercatorCoordinateUnits() * 40;
+
+                    const l = new THREE.Matrix4();
+                    l.makeTranslation(mercator.x, mercator.y, mercator.z);
+                    l.multiply(new THREE.Matrix4().makeRotationZ(-bearing * Math.PI / 180));
+                    l.multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2));
+                    l.scale(new THREE.Vector3(scale, scale, scale));
+
+                    const m = new THREE.Matrix4().fromArray(matrix);
+                    this.camera.projectionMatrix = m.multiply(l);
+
+                    this.renderer.resetState();
+                    this.renderer.render(this.scene, this.camera);
+
+                    // สั่งให้วาดภาพต่อเนื่อง 60 fps
+                    this.map.triggerRepaint();
+
+                    // ซูมตามรถไฟ หากปุ่มถูกกดอยู่
+                    if (isCameraFollowing) {
+                        this.map.jumpTo({
+                            center: lngLat,
+                            bearing: bearing,
+                            pitch: 75,
+                            zoom: 13
+                        });
+                    }
+                }
+            };
+
+            // เพิ่มเลเยอร์โมเดล และให้แสดงอยู่เหนือข้อความแผนที่
+            map.addLayer(customLayer);
+        }
+    </script>
+</body>
+
+</html>
