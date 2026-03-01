@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Analytics: Chiang Mai - Phitsanulok (CYBER-DASHBOARD)</title>
+
+    <!-- Dependencies -->
+    <script src="https://unpkg.com/three@0.147.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/globe.gl@2.30.0/dist/globe.gl.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Rajdhani:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #050b14;
+            --panel-bg: rgba(10, 20, 35, 0.7);
+            --border-color: rgba(0, 240, 255, 0.3);
+            --accent-primary: #00f0ff;
+            --accent-secondary: #ff003c;
+            --text-main: #e0fbfc;
+            --text-muted: #84a59d;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(circle at 50% 50%, #0a1128 0%, #000000 100%);
+        }
+
+        /* Glitch Title Effect */
+        h1,
+        h2,
+        h3 {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        #dashboard-container {
+            display: grid;
+            grid-template-columns: 350px 1fr 350px;
+            grid-template-rows: 80px 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            height: 100vh;
+            box-sizing: border-box;
+            z-index: 10;
+            position: relative;
+            pointer-events: none;
+            /* Let clicks pass through empty space to globe */
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.1), inset 0 0 20px rgba(0, 240, 255, 0.05);
+            pointer-events: auto;
+            /* Re-enable clicks for panels */
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 30px;
+            height: 2px;
+            background: var(--accent-primary);
+            box-shadow: 0 0 10px var(--accent-primary);
+        }
+
+        .panel-header {
+            font-size: 1.1rem;
+            color: var(--accent-primary);
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+            padding-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* specific grid placements */
+        .header-panel {
+            grid-column: span 3;
+            text-align: center;
+            border: none;
+            background: transparent;
+            backdrop-filter: none;
+            box-shadow: none;
+            pointer-events: none;
+        }
+
+        .header-panel h1 {
+            font-size: 2.5rem;
+            color: #fff;
+            text-shadow: 0 0 10px var(--accent-primary), 0 0 20px var(--accent-primary);
+            letter-spacing: 5px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--accent-secondary);
+            letter-spacing: 3px;
+        }
+
+        .left-top {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .left-bottom {
+            grid-column: 1;
+            grid-row: 3;
+        }
+
+        .right-top {
+            grid-column: 3;
+            grid-row: 2;
+        }
+
+        .right-bottom {
+            grid-column: 3;
+            grid-row: 3;
+        }
+
+        .center-bottom {
+            grid-column: 2;
+            grid-row: 3;
+            height: 250px;
+            align-self: end;
+            background: linear-gradient(0deg, rgba(10, 20, 35, 0.9) 0%, rgba(10, 20, 35, 0.1) 100%);
+            border-top: 1px solid var(--accent-primary);
+        }
+
+        /* Stats display */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .stat-box {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #222;
+            padding: 10px;
+            text-align: center;
+            border-radius: 4px;
+        }
+
+        .stat-val {
+            font-size: 2rem;
+            font-family: 'Orbitron';
+            color: #fff;
+            margin: 5px 0;
+            text-shadow: 0 0 5px var(--accent-primary);
+        }
+
+        .stat-lbl {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .alert-val {
+            color: var(--accent-secondary);
+            text-shadow: 0 0 5px var(--accent-secondary);
+        }
+
+        /* Chart Containers */
+        .chart-container {
+            flex-grow: 1;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Globe Background */
+        #globe-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        .station-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .station-list li {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .station-list li::before {
+            content: '►';
+            color: var(--accent-primary);
+            margin-right: 10px;
+            font-size: 0.8em;
+        }
+
+        .station-time {
+            color: var(--text-muted);
+            font-size: 0.9em;
+            font-family: monospace;
+        }
+
+        /* Scanner line */
+        .scanner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--accent-primary);
+            box-shadow: 0 0 10px var(--accent-primary);
+            opacity: 0.5;
+            animation: scan 4s linear infinite;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        @keyframes scan {
+            0% {
+                top: 0;
+            }
+
+            100% {
+                top: 100%;
+            }
+        }
+
+        /* Log Box */
+        .log-box {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #0f0;
+            background: #000;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            overflow-y: hidden;
+            height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="scanner"></div>
+    <div id="globe-container"></div>
+
+    <div id="dashboard-container">
+
+        <div class="header-panel">
+            <h1>SYSTEM METRICS: OMEGA</h1>
+            <div class="subtitle">TRANSPORTATION DATA VISUALIZATION | CNX ➔ PHS</div>
+        </div>
+
+        <!-- Left Top: Overview Stats -->
+        <div class="panel left-top">
+            <div class="panel-header">❖ MISSION CRITICAL</div>
+            <div class="stat-grid">
+                <div class="stat-box">
+                    <div class="stat-lbl">TOTAL DISTANCE</div>
+                    <div class="stat-val" id="val-dist">0</div>
+                    <div class="stat-lbl">KILOMETERS</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-lbl">EST. DURATION</div>
+                    <div class="stat-val" id="val-time">0</div>
+                    <div class="stat-lbl">HOURS</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-lbl">AVG SPEED</div>
+                    <div class="stat-val" id="val-speed">0</div>
+                    <div class="stat-lbl">KM/H</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-lbl">BATTERY DELTA</div>
+                    <div class="stat-val alert-val" id="val-bat-drain">0%</div>
+                    <div class="stat-lbl">TOTAL DRAIN</div>
+                </div>
+            </div>
+            <div style="margin-top:20px;">
+                <div class="panel-header" style="font-size: 0.9rem;">❖ OPERATION LOGS</div>
+                <div class="log-box" id="sys-logs">
+                    <div>[SYS] Initializing neural link...</div>
+                    <div>[SYS] Connection established.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Left Bottom: Battery Drain Chart -->
+        <div class="panel left-bottom">
+            <div class="panel-header">❖ POWER CONSUMPTION <span
+                    style="font-size:0.7em; color:var(--text-muted)">%</span></div>
+            <div class="chart-container">
+                <canvas id="batteryChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Right Top: Station Checkpoints -->
+        <div class="panel right-top">
+            <div class="panel-header">❖ WAYPOINTS IDENTIFIED <span id="waypoint-count"
+                    style="font-size:0.7em; color:var(--text-muted)">[0]</span></div>
+            <ul class="station-list" id="station-list">
+                <!-- Data populated dynamically -->
+            </ul>
+        </div>
+
+        <!-- Right Bottom: Elevation / Speed Profile -->
+        <div class="panel right-bottom">
+            <div class="panel-header">❖ VELOCITY VECTOR <span
+                    style="font-size:0.7em; color:var(--text-muted)">KM/H</span></div>
+            <div class="chart-container">
+                <canvas id="speedChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Init Globe
+        const globeContainer = document.getElementById('globe-container');
+        const world = Globe()
+            (globeContainer)
+            .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
+            .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+            .backgroundColor('#050b14')
+            .pointOfView({ lat: 17.5, lng: 99.5, altitude: 0.6 }, 2000)
+            .showAtmosphere(true)
+            .atmosphereColor('#00f0ff')
+            .atmosphereAltitude(0.15);
+
+        // Auto-rotate
+        world.controls().autoRotate = true;
+        world.controls().autoRotateSpeed = 0.5;
+        world.controls().enableZoom = false;
+
+        // Custom Charts
+        Chart.defaults.color = '#84a59d';
+        Chart.defaults.font.family = "'Rajdhani', sans-serif";
+        Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+        Chart.defaults.plugins.tooltip.titleColor = '#00f0ff';
+        Chart.defaults.plugins.tooltip.borderColor = '#00f0ff';
+        Chart.defaults.plugins.tooltip.borderWidth = 1;
+
+        let batteryChart, speedChart;
+
+        function initCharts(labels, batteryData, speedData) {
+            // Battery Chart
+            const ctxBat = document.getElementById('batteryChart').getContext('2d');
+
+            // Gradient for battery
+            let gradientP = ctxBat.createLinearGradient(0, 0, 0, 400);
+            gradientP.addColorStop(0, 'rgba(0, 240, 255, 0.5)');
+            gradientP.addColorStop(1, 'rgba(0, 240, 255, 0.0)');
+
+            batteryChart = new Chart(ctxBat, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Battery Level (%)',
+                        data: batteryData,
+                        borderColor: '#00f0ff',
+                        backgroundColor: gradientP,
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { min: 0, max: 100, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { display: false, grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } },
+                    animation: { duration: 2000, easing: 'easeOutQuart' }
+                }
+            });
+
+            // Speed Chart
+            const ctxSpd = document.getElementById('speedChart').getContext('2d');
+
+            let gradientS = ctxSpd.createLinearGradient(0, 0, 0, 400);
+            gradientS.addColorStop(0, 'rgba(255, 0, 60, 0.5)');
+            gradientS.addColorStop(1, 'rgba(255, 0, 60, 0.0)');
+
+            speedChart = new Chart(ctxSpd, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Speed (km/h)',
+                        data: speedData,
+                        backgroundColor: '#ff003c',
+                        borderWidth: 0,
+                        borderRadius: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { display: false, grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } },
+                    animation: { duration: 2500, easing: 'easeOutElastic' }
+                }
+            });
+        }
+
+        function pushLog(msg) {
+            const logBox = document.getElementById('sys-logs');
+            const d = new Date().toISOString().split('T')[1].substring(0, 8);
+            logBox.innerHTML += `<div>[${d}] ${msg}</div>`;
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        // Generate mock data representing the CSV for visualization mapping
+        const csvUrl = 'travel-phitsanulok.csv';
+        pushLog('Requesting satellite telemetry...');
+
+        Papa.parse(csvUrl, {
+            download: true,
+            header: true,
+            dynamicTyping: true,
+            skipEmptyLines: true,
+            error: function (err) { pushLog('ERR: Telemetry failed.'); },
+            complete: function (results) {
+                pushLog('Telemetry received. Processing blocks: ' + results.data.length);
+                const data = results.data;
+
+                let totalDist = 0;
+                let coords = [];
+                let stations = [];
+                let lastPt = null;
+                let lastTime = null;
+
+                let labels = [];
+                let batteryLevels = [];
+                let speeds = [];
+
+                let lastStationName = '';
+
+                data.forEach(row => {
+                    const lat = parseFloat(row.lat);
+                    const lon = parseFloat(row.lon);
+
+                    if (isNaN(lat) || isNaN(lon)) return;
+
+                    const pt = turf.point([lon, lat]);
+                    const timeStr = row.updated;
+                    const dTime = new Date(timeStr);
+
+                    coords.push({ lat: lat, lng: lon });
+
+                    // Processing specific stations
+                    const pName = row.place || row.locality;
+                    if (pName && pName !== lastStationName && pName.length > 2) {
+                        stations.push({
+                            name: pName,
+                            time: dTime.toLocaleTimeString('th-TH'),
+                            lat: lat,
+                            lng: lon
+                        });
+                        lastStationName = pName;
+                    }
+
+                    // Physics Calc
+                    let speed = 0;
+                    if (lastPt && lastTime) {
+                        const distKm = turf.distance(lastPt, pt, { units: 'kilometers' });
+                        totalDist += distKm;
+                        const hrDiff = (dTime.getTime() - lastTime.getTime()) / (1000 * 60 * 60);
+                        if (hrDiff > 0) speed = distKm / hrDiff;
+                    }
+
+                    labels.push(dTime.toLocaleTimeString('en-US', { hour12: false }));
+                    batteryLevels.push(row.battery != null ? row.battery : 0);
+                    speeds.push(speed > 200 ? 0 : speed); // Cap anomalies
+
+                    lastPt = pt;
+                    lastTime = dTime;
+                });
+
+                // Update UI Stats
+                document.getElementById('val-dist').innerText = totalDist.toFixed(1);
+
+                const timeStart = new Date(data[0].updated);
+                const timeEnd = new Date(data[data.length - 1].updated);
+                const durationHrs = (timeEnd - timeStart) / (1000 * 60 * 60);
+                document.getElementById('val-time').innerText = durationHrs.toFixed(1);
+
+                document.getElementById('val-speed').innerText = (totalDist / durationHrs).toFixed(1);
+
+                const rootBat = data[0].battery || 100;
+                const endBat = data[data.length - 1].battery || 0;
+                document.getElementById('val-bat-drain').innerText = (rootBat - endBat) + '%';
+
+                // Stations List
+                document.getElementById('waypoint-count').innerText = `[${stations.length}]`;
+                const sList = document.getElementById('station-list');
+                stations.forEach(s => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span>${s.name}</span> <span class="station-time">${s.time}</span>`;
+                    sList.appendChild(li);
+                });
+
+                // Render Charts
+                initCharts(labels, batteryLevels, speeds);
+                pushLog('Charts rendered successfully.');
+
+                // Render Globe Data
+                pushLog('Injecting coordinates to orbital map...');
+
+                // Draw Paths
+                world.pathsData([{ coords: coords }])
+                    .pathPoints('coords')
+                    .pathPointLat(p => p.lat)
+                    .pathPointLng(p => p.lng)
+                    .pathColor(() => '#ff003c')
+                    .pathDashLength(0.01)
+                    .pathDashGap(0.004)
+                    .pathDashAnimateTime(10000)
+                    .pathStroke(2);
+
+                // Draw Stations as glowing points
+                world.labelsData(stations)
+                    .labelLat(d => d.lat)
+                    .labelLng(d => d.lng)
+                    .labelText(d => d.name)
+                    .labelSize(0.5)
+                    .labelDotRadius(0.3)
+                    .labelColor(() => '#00f0ff')
+                    .labelResolution(2);
+
+                // Draw 3D Arc
+                if (coords.length > 0) {
+                    world.arcsData([{
+                        startLat: coords[0].lat, startLng: coords[0].lng,
+                        endLat: coords[coords.length - 1].lat, endLng: coords[coords.length - 1].lng,
+                        color: ['#00f0ff', '#ff003c']
+                    }])
+                        .arcDashLength(0.4)
+                        .arcDashGap(0.2)
+                        .arcDashAnimateTime(2000)
+                        .arcStroke(1);
+                }
+
+                pushLog('System nominal. Ready.');
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            world.width(window.innerWidth).height(window.innerHeight);
+        });
+
+    </script>
+</body>
+
+</html>
