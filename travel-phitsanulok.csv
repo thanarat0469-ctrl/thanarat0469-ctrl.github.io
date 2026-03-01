@@ -1,0 +1,24 @@
+device,model,battery,charging,lat,lon,accuracy,source,place,place_type,locality,address,updated
+Tracker-1,GPS-A1,100,true,18.7844,99.0175,5,gps,Chiang Mai Station,station,Chiang Mai,"Chiang Mai, Thailand",2026-03-01T08:00:00Z
+Tracker-1,GPS-A1,99,false,18.7500,99.0150,5,gps,,,,2026-03-01T08:10:00Z
+Tracker-1,GPS-A1,98,false,18.7000,99.0120,5,gps,,,,2026-03-01T08:20:00Z
+Tracker-1,GPS-A1,96,false,18.6500,99.0110,5,gps,,,,2026-03-01T08:30:00Z
+Tracker-1,GPS-A1,95,false,18.5819,99.0105,5,gps,Lamphun Station,station,Lamphun,"Lamphun, Thailand",2026-03-01T08:45:00Z
+Tracker-1,GPS-A1,93,false,18.5000,99.1000,5,gps,,,,2026-03-01T09:05:00Z
+Tracker-1,GPS-A1,90,false,18.4100,99.2500,5,gps,,,,2026-03-01T09:30:00Z
+Tracker-1,GPS-A1,86,false,18.3500,99.3800,5,gps,,,,2026-03-01T09:50:00Z
+Tracker-1,GPS-A1,80,false,18.2917,99.4858,5,gps,Lampang Station,station,Lampang,"Lampang, Thailand",2026-03-01T10:15:00Z
+Tracker-1,GPS-A1,76,false,18.2000,99.6000,5,gps,,,,2026-03-01T10:40:00Z
+Tracker-1,GPS-A1,72,false,18.1200,99.7500,5,gps,,,,2026-03-01T11:00:00Z
+Tracker-1,GPS-A1,67,false,18.0500,99.9000,5,gps,,,,2026-03-01T11:25:00Z
+Tracker-1,GPS-A1,60,false,17.9822,100.0469,5,gps,Den Chai Station,station,Phrae,"Phrae, Thailand",2026-03-01T11:50:00Z
+Tracker-1,GPS-A1,55,false,17.9000,100.0600,5,gps,,,,2026-03-01T12:10:00Z
+Tracker-1,GPS-A1,51,false,17.8000,100.0800,5,gps,,,,2026-03-01T12:30:00Z
+Tracker-1,GPS-A1,45,false,17.6539,100.0933,5,gps,Sila At Station,station,Uttaradit,"Uttaradit, Thailand",2026-03-01T13:00:00Z
+Tracker-1,GPS-A1,40,false,17.5500,100.0950,5,gps,,,,2026-03-01T13:20:00Z
+Tracker-1,GPS-A1,35,false,17.4200,100.0980,5,gps,,,,2026-03-01T13:40:00Z
+Tracker-1,GPS-A1,30,false,17.3000,100.1000,5,gps,Phichai Station,station,Uttaradit,"Uttaradit, Thailand",2026-03-01T14:05:00Z
+Tracker-1,GPS-A1,26,false,17.1800,100.1300,5,gps,,,,2026-03-01T14:25:00Z
+Tracker-1,GPS-A1,22,false,17.0500,100.1800,5,gps,,,,2026-03-01T14:45:00Z
+Tracker-1,GPS-A1,18,false,16.9200,100.2200,5,gps,,,,2026-03-01T15:05:00Z
+Tracker-1,GPS-A1,15,false,16.8172,100.2661,5,gps,Phitsanulok Station,station,Phitsanulok,"Phitsanulok, Thailand",2026-03-01T15:30:00Z
