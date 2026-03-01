@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS - DustBoy Advanced Air Analytics</title>
+
+    <!-- Dependencies -->
+    <script src="https://unpkg.com/three@0.147.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;600&family=Rajdhani:wght@500;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --glass-bg: rgba(10, 25, 47, 0.4);
+            --glass-border: rgba(100, 255, 218, 0.2);
+            --neon-cyan: #64ffda;
+            --neon-pink: #f92672;
+            --neon-orange: #fd971f;
+            --text-light: #ccd6f6;
+            --text-dim: #8892b0;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #020c1b;
+            color: var(--text-light);
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+        }
+
+        /* 3D Canvas Background */
+        #webgl-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: auto;
+        }
+
+        /* HUD Overlay */
+        #hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 10;
+            padding: 30px;
+            box-sizing: border-box;
+            display: grid;
+            grid-template-columns: 350px 1fr 350px;
+            grid-template-rows: 80px 1fr 1fr;
+            gap: 25px;
+            pointer-events: none;
+            /* Allows mouse to interact with 3D background where there are no panels */
+        }
+
+        /* Header Segment */
+        .hud-header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .hud-title {
+            font-family: 'Teko', sans-serif;
+            font-size: 4rem;
+            line-height: 0.8;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 20px rgba(100, 255, 218, 0.5);
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+        .hud-subtitle {
+            color: var(--text-dim);
+            font-size: 1.2rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+        }
+
+        .live-clock {
+            font-family: 'Teko', sans-serif;
+            font-size: 2.5rem;
+            color: var(--neon-pink);
+            text-shadow: 0 0 10px rgba(249, 38, 114, 0.5);
+        }
+
+        /* Glassmorphism Panels */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            pointer-events: auto;
+            /* Re-enable clicks inside panels */
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(100, 255, 218, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(100, 255, 218, 0.15);
+        }
+
+        /* Panel Decals for Cyberpunk Look */
+        .glass-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 10%;
+            width: 30%;
+            height: 2px;
+            background: var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .glass-panel::after {
+            content: '';
+            position: absolute;
+            bottom: 10%;
+            right: 0;
+            width: 2px;
+            height: 30%;
+            background: var(--neon-pink);
+            box-shadow: 0 0 10px var(--neon-pink);
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--glass-border);
+            padding-bottom: 5px;
+        }
+
+        /* specific layout */
+        .p-left-top {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .p-left-bot {
+            grid-column: 1;
+            grid-row: 3;
+        }
+
+        .p-right-top {
+            grid-column: 3;
+            grid-row: 2;
+        }
+
+        .p-right-bot {
+            grid-column: 3;
+            grid-row: 3;
+        }
+
+        .p-center-bot {
+            grid-column: 2;
+            grid-row: 3;
+            height: 200px;
+            align-self: end;
+        }
+
+        /* Data Displays */
+        .aqi-huge {
+            font-family: 'Teko', sans-serif;
+            font-size: 6rem;
+            line-height: 1;
+            text-align: center;
+            color: var(--neon-cyan);
+            margin: 10px 0;
+            text-shadow: 0 0 30px rgba(100, 255, 218, 0.4);
+        }
+
+        .aqi-label {
+            text-align: center;
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+            color: #fff;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .data-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+        }
+
+        .d-val {
+            font-family: 'Teko', sans-serif;
+            font-size: 2.2rem;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .d-lbl {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .chart-box {
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+            min-height: 150px;
+        }
+
+        /* Station Selector */
+        .select-station {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: var(--neon-cyan);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.1rem;
+            outline: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .select-station:focus {
+            border-color: var(--neon-cyan);
+        }
+
+        .select-station option {
+            background: #020c1b;
+            color: #fff;
+        }
+
+        /* Scanline Overlay */
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.1));
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 100;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 3D Background -->
+    <div id="webgl-container"></div>
+    <div class="scanlines"></div>
+
+    <!-- HUD Overlay -->
+    <div id="hud">
+
+        <div class="hud-header">
+            <div>
+                <h1 class="hud-title">NEXUS DUST-CORE</h1>
+                <div class="hud-subtitle">ENVIRONMENTAL PARTICLE SENSOR NETWORK v3.0</div>
+            </div>
+            <div class="live-clock" id="clock">00:00:00</div>
+        </div>
+
+        <!-- System Controls & Core Metrics -->
+        <div class="glass-panel p-left-top">
+            <div class="panel-title">TELEMETRY LOCK</div>
+            <select class="select-station" id="station-select">
+                <option value="0">Node 01: Chiang Mai (Urban)</option>
+                <option value="1">Node 02: Bangkok (Industrial)</option>
+                <option value="2">Node 03: Phitsanulok (Valley)</option>
+            </select>
+
+            <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                <div class="aqi-huge" id="main-aqi">0</div>
+                <div class="aqi-label" id="main-status">SCANNING...</div>
+            </div>
+
+            <div class="data-grid">
+                <div class="data-box">
+                    <div class="d-val" id="pm25-val">0</div>
+                    <div class="d-lbl">PM 2.5 µg/m³</div>
+                </div>
+                <div class="data-box">
+                    <div class="d-val" id="pm10-val">0</div>
+                    <div class="d-lbl">PM 10 µg/m³</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Radar Analysis -->
+        <div class="glass-panel p-left-bot">
+            <div class="panel-title">POLLUTANT SPECTRUM</div>
+            <div class="chart-box" id="radar-chart"></div>
+        </div>
+
+        <!-- Realtime AQI Gauge -->
+        <div class="glass-panel p-right-top">
+            <div class="panel-title">THREAT LEVEL</div>
+            <div class="chart-box" id="gauge-chart"></div>
+        </div>
+
+        <!-- Historical Data -->
+        <div class="glass-panel p-right-bot">
+            <div class="panel-title">PM2.5 TRAJECTORY (72h)</div>
+            <div class="chart-box" id="line-chart"></div>
+        </div>
+
+        <!-- Atmosphere Info -->
+        <div class="glass-panel p-center-bot">
+            <div class="panel-title">ATMOSPHERIC CONDITIONS</div>
+            <div class="data-grid" style="grid-template-columns: repeat(4, 1fr); margin-top: 5px;">
+                <div class="data-box">
+                    <div class="d-val" id="temp-val">0</div>
+                    <div class="d-lbl">TMP (°C)</div>
+                </div>
+                <div class="data-box">
+                    <div class="d-val" id="hum-val">0</div>
+                    <div class="d-lbl">HUM (%)</div>
+                </div>
+                <div class="data-box">
+                    <div class="d-val" id="wnd-val">0</div>
+                    <div class="d-lbl">WND (km/h)</div>
+                </div>
+                <div class="data-box">
+                    <div class="d-val" id="prs-val">0</div>
+                    <div class="d-lbl">PRS (hPa)</div>
+                </div>
+            </div>
+            <div
+                style="text-align: center; margin-top: 15px; color: var(--text-dim); font-size: 0.8rem; letter-spacing: 2px;">
+                STATUS: <span style="color: var(--neon-cyan)">SENSORS ONLINE</span> | LINK: <span
+                    style="color: var(--neon-cyan)">STABLE</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. Live Clock ---
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-US', { hour12: false });
+        }, 1000);
+
+        // --- 2. Mock Data Sets (Sci-Fi Themed) ---
+        const stationData = [
+            {
+                name: "Chiang Mai", aqi: 155, pm25: 65, pm10: 85, temp: 32, hum: 45, wnd: 12, prs: 1010, status: "UNHEALTHY", color: "#f92672",
+                radar: [65, 85, 45, 30, 80], hist: [45, 55, 75, 80, 70, 60, 65]
+            },
+            {
+                name: "Bangkok", aqi: 85, pm25: 28, pm10: 45, temp: 35, hum: 60, wnd: 8, prs: 1008, status: "MODERATE", color: "#fd971f",
+                radar: [28, 45, 60, 50, 40], hist: [90, 80, 60, 50, 35, 30, 28]
+            },
+            {
+                name: "Phitsanulok", aqi: 42, pm25: 10, pm10: 20, temp: 33, hum: 55, wnd: 15, prs: 1012, status: "GOOD", color: "#64ffda",
+                radar: [10, 20, 15, 10, 20], hist: [20, 15, 12, 10, 8, 11, 10]
+            }
+        ];
+
+        // --- 3. ECharts Initialization ---
+        const radarC = echarts.init(document.getElementById('radar-chart'));
+        const gaugeC = echarts.init(document.getElementById('gauge-chart'));
+        const lineC = echarts.init(document.getElementById('line-chart'));
+
+        function updateCharts(data) {
+
+            // Update Text UI
+            document.getElementById('main-aqi').innerText = data.aqi;
+            document.getElementById('main-aqi').style.color = data.color;
+            document.getElementById('main-aqi').style.textShadow = `0 0 30px ${data.color}80`;
+
+            document.getElementById('main-status').innerText = data.status;
+            document.getElementById('main-status').style.color = data.color;
+
+            document.getElementById('pm25-val').innerText = data.pm25;
+            document.getElementById('pm10-val').innerText = data.pm10;
+            document.getElementById('temp-val').innerText = data.temp;
+            document.getElementById('hum-val').innerText = data.hum;
+            document.getElementById('wnd-val').innerText = data.wnd;
+            document.getElementById('prs-val').innerText = data.prs;
+
+            // Radar Chart (Multi-pollutant footprint)
+            radarC.setOption({
+                radar: {
+                    indicator: [{ name: 'PM2.5', max: 200 }, { name: 'PM10', max: 200 }, { name: 'O3', max: 100 }, { name: 'NO2', max: 100 }, { name: 'SO2', max: 100 }],
+                    shape: 'polygon', splitNumber: 4,
+                    axisName: { color: '#8892b0', fontFamily: 'Rajdhani', fontSize: 12 },
+                    splitLine: { lineStyle: { color: ['rgba(100, 255, 218, 0.1)', 'rgba(100, 255, 218, 0.2)', 'rgba(100, 255, 218, 0.4)', 'rgba(100, 255, 218, 0.6)'].reverse() } },
+                    splitArea: { show: false }, axisLine: { lineStyle: { color: 'rgba(100, 255, 218, 0.5)' } }
+                },
+                series: [{
+                    type: 'radar',
+                    data: [{ value: data.radar, name: 'Toxins', itemStyle: { color: data.color }, areaStyle: { color: new echarts.graphic.RadialGradient(0.5, 0.5, 1, [{ offset: 0, color: 'rgba(0,0,0,0)' }, { offset: 1, color: data.color }]) } }]
+                }],
+                animationDuration: 1500
+            });
+
+            // Gauge Chart (AQI Meter)
+            gaugeC.setOption({
+                series: [{
+                    type: 'gauge', startAngle: 180, endAngle: 0, min: 0, max: 300,
+                    splitNumber: 6,
+                    axisLine: { lineStyle: { width: 15, color: [[0.16, '#64ffda'], [0.33, '#a6e22e'], [0.5, '#fd971f'], [0.66, '#f92672'], [1, '#ae81ff']] } },
+                    pointer: { itemStyle: { color: '#ccd6f6' } },
+                    axisTick: { distance: -20, length: 8, lineStyle: { color: '#fff', width: 2 } },
+                    splitLine: { distance: -25, length: 25, lineStyle: { color: '#fff', width: 3 } },
+                    axisLabel: { color: '#8892b0', distance: 30, fontSize: 12, fontFamily: 'Rajdhani' },
+                    detail: { valueAnimation: true, formatter: '{value}', color: 'inherit', fontFamily: 'Teko', fontSize: 40, offsetCenter: [0, '20%'] },
+                    data: [{ value: data.aqi }]
+                }],
+                animationDuration: 2000
+            });
+
+            // Line Chart (Historical PM2.5)
+            lineC.setOption({
+                grid: { top: 10, bottom: 20, left: 30, right: 10 },
+                xAxis: { type: 'category', data: ['-72h', '-60h', '-48h', '-36h', '-24h', '-12h', 'Now'], axisLabel: { color: '#8892b0', fontFamily: 'Rajdhani' }, axisLine: { lineStyle: { color: '#8892b0' } } },
+                yAxis: { type: 'value', axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } } },
+                series: [{
+                    data: data.hist, type: 'line', smooth: true, symbol: 'circle', symbolSize: 8,
+                    itemStyle: { color: data.color, shadowColor: data.color, shadowBlur: 10 },
+                    lineStyle: { width: 3, shadowColor: data.color, shadowBlur: 10 },
+                    areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: data.color + '80' }, { offset: 1, color: 'rgba(0,0,0,0)' }]) }
+                }],
+                animationDuration: 1500
+            });
+
+            // Adjust Three.js Particles based on pollution
+            targetParticleColor.set(data.color);
+            targetParticleSpeed = (data.pm25 / 100) * 0.05 + 0.002;
+        }
+
+        // Handle Selector
+        document.getElementById('station-select').addEventListener('change', (e) => {
+            updateCharts(stationData[e.target.value]);
+        });
+
+
+        // --- 4. Three.js Background Particle System (The Dust Simulator) ---
+        const canvasContainer = document.getElementById('webgl-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x020c1b, 0.002);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 2000);
+        camera.position.z = 500;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        canvasContainer.appendChild(renderer.domElement);
+
+        // Particle Geometry
+        const particleCount = 15000;
+        const geometry = new THREE.BufferGeometry();
+        const positions = [];
+        const velocities = [];
+
+        for (let i = 0; i < particleCount; i++) {
+            positions.push((Math.random() - 0.5) * 2000);
+            positions.push((Math.random() - 0.5) * 2000);
+            positions.push((Math.random() - 0.5) * 2000);
+
+            velocities.push((Math.random() - 0.5) * 2);
+            velocities.push((Math.random() - 0.5) * 2);
+            velocities.push((Math.random() - 0.5) * 2);
+        }
+
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        geometry.setAttribute('velocity', new THREE.Float32BufferAttribute(velocities, 3));
+
+        // Let's create a circular glowing texture for particles dynamically
+        const canvas = document.createElement('canvas');
+        canvas.width = 32; canvas.height = 32;
+        const context = canvas.getContext('2d');
+        const gradient = context.createRadialGradient(16, 16, 0, 16, 16, 16);
+        gradient.addColorStop(0, 'rgba(255,255,255,1)');
+        gradient.addColorStop(0.2, 'rgba(255,255,255,0.8)');
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, 32, 32);
+        const particleTexture = new THREE.CanvasTexture(canvas);
+
+        const material = new THREE.PointsMaterial({
+            size: 8,
+            map: particleTexture,
+            blending: THREE.AdditiveBlending,
+            depthTest: false,
+            transparent: true,
+            opacity: 0.8,
+            color: new THREE.Color("#f92672") // Default Red/Pink
+        });
+
+        const particles = new THREE.Points(geometry, material);
+        scene.add(particles);
+
+        let targetParticleColor = new THREE.Color("#f92672");
+        let currentColor = new THREE.Color("#f92672");
+        let currentParticleSpeed = 0.01;
+        let targetParticleSpeed = 0.01;
+
+        // Mouse Parallax Interaction
+        let mouseX = 0;
+        let mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX - window.innerWidth / 2) * 0.5;
+            mouseY = (e.clientY - window.innerHeight / 2) * 0.5;
+        });
+
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Interpolate color to smooth transitions
+            currentColor.lerp(targetParticleColor, 0.05);
+            material.color.copy(currentColor);
+
+            // Interpolate speed
+            currentParticleSpeed += (targetParticleSpeed - currentParticleSpeed) * 0.05;
+
+            // Rotate entire system
+            particles.rotation.x += currentParticleSpeed * 0.5;
+            particles.rotation.y += currentParticleSpeed;
+
+            // Camera movement based on mouse
+            camera.position.x += (mouseX - camera.position.x) * 0.02;
+            camera.position.y += (-mouseY - camera.position.y) * 0.02;
+            camera.lookAt(scene.position);
+
+            renderer.render(scene, camera);
+        }
+
+        // Init Resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            radarC.resize(); gaugeC.resize(); lineC.resize();
+        });
+
+        // Boot
+        updateCharts(stationData[0]);
+        animate();
+
+    </script>
+</body>
+
+</html>
